@@ -120,7 +120,7 @@ class RoomController(QObject):
             )
             
     def join_room(self, room_id: str):
-        """Присоединиться к комнате и автоматически начать игру"""
+        """Присоединиться к комнате"""
         try:
             success = self.room_service.join_room(room_id, self.player_id, self.player_name)
             
@@ -304,24 +304,23 @@ class RoomController(QObject):
             if not self.current_room_id:
                 return
                 
-            room = self.room_service.get_room_info(self.current_room_id)
-            if room:
-                self.view.update_room_info(room)
+            room_info = self.room_service.get_room_info(self.current_room_id)
+            if room_info:
+                self.view.update_room_info(room_info)
                 
-                # Если игра началась, переключаемся на игру
-                if room['status'] == 'playing' and 'game_id' in room:
-                    self.refresh_timer.stop()
-                    self.game_started.emit(room['game_id'], self.player_id, "Соперник")
+                # Проверяем нужно ли начинать игру (для создателя когда 2 игрока)
+                if len(room_info['players']) == 2 and room_info['creator_id'] == self.player_id:
+                    logger.info(f"Создатель обнаружил 2 игроков, автоматически начинаем игру")
+                    self.start_game(self.current_room_id)
             else:
                 # Комната была удалена
                 self.current_room_id = None
-                self.view.show_rooms_list()
+                self.view.show_room_list()
                 self.refresh_rooms()
-                
                 QMessageBox.information(
                     self.view,
                     "Комната удалена",
-                    "🏠 Комната была удалена"
+                    "Комната была удалена (возможно, из-за неактивности)"
                 )
                 
         except Exception as e:
