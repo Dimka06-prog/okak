@@ -65,6 +65,11 @@ class RoomController(QObject):
     def refresh_rooms(self):
         """Обновить список комнат"""
         try:
+            # Очищаем неактивные комнаты
+            cleaned_count = self.room_service.cleanup_inactive_rooms()
+            if cleaned_count > 0:
+                logger.info(f"Очищено {cleaned_count} неактивных комнат")
+            
             rooms = self.room_service.get_available_rooms()
             self.view.update_rooms_list(rooms)
         except Exception as e:

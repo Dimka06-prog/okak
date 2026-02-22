@@ -322,11 +322,7 @@ class Application(QMainWindow):
     def _initialize_room_controller(self):
         """Инициализация контроллера комнат"""
         try:
-            import asyncio
-            loop = asyncio.new_event_loop()
-            asyncio.set_event_loop(loop)
-            loop.run_until_complete(self.controllers['room'].initialize())
-            loop.close()
+            self.controllers['room'].initialize()
         except Exception as e:
             logging.error(f"❌ Ошибка инициализации комнат: {e}")
             self.show_error_message(f"Ошибка инициализации комнат: {e}")

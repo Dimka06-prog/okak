@@ -285,6 +285,21 @@ class FirebasePlayerRepository(PlayerRepository):
             logger.error(f"Ошибка обновления ping: {e}")
             return False
     
+    def update_player_status(self, player_id: str, status: str) -> bool:
+        """Обновить статус игрока"""
+        def _update_status():
+            self.ref.child('players').child(player_id).update({
+                'status': status,
+                'last_status_change': datetime.now().isoformat()
+            })
+            return True
+        
+        try:
+            return self._safe_operation(_update_status) or False
+        except Exception as e:
+            logger.error(f"Ошибка обновления статуса игрока: {e}")
+            return False
+    
     # Методы для работы с комнатами
     def create_room(self, room_id: str, room_data: dict) -> bool:
         """Создать комнату"""

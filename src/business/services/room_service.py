@@ -218,14 +218,34 @@ class RoomService:
             logger.error(f"Error getting room info: {e}")
             return None
     
-    def get_player_room(self, player_id: str) -> Optional[Dict]:
-        """Получить комнату игрока"""
+    def cleanup_inactive_rooms(self):
+        """Удалить комнаты, бездействующие более 3 минут"""
         try:
             rooms = self.database.get_all_rooms()
+            current_time = datetime.now()
+            rooms_to_delete = []
+            
             for room in rooms:
-                if player_id in room['players']:
-                    return room
-            return None
+                # Пропускаем комнаты с игрой
+                if room['status'] != RoomStatus.WAITING.value:
+                    continue
+                
+                # Проверяем время создания
+                created_at = datetime.fromisoformat(room['created_at'])
+                time_diff = (current_time - created_at).total_seconds()
+                
+                # Если комнате больше 3 минут и она пустая или только с создателем
+                if time_diff > 180:  # 3 минуты = 180 секунд
+                    if len(room['players']) <= 1:
+                        rooms_to_delete.append(room['id'])
+            
+            # Удаляем найденные комнаты
+            for room_id in rooms_to_delete:
+                self.database.delete_room(room_id)
+                logger.info(f"Удалена неактивная комната: {room_id}")
+            
+            return len(rooms_to_delete)
+            
         except Exception as e:
-            logger.error(f"Error getting player room: {e}")
-            return None
+            logger.error(f"Error cleaning up inactive rooms: {e}")
+            return 0
