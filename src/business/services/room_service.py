@@ -181,11 +181,18 @@ class RoomService:
             
             # Проверяем, что создатель комнаты запускает игру
             if room['creator_id'] != player_id:
+                logger.warning(f"Only creator can start game. Creator: {room['creator_id']}, Player: {player_id}")
+                return None
+            
+            # Проверяем, что достаточно игроков для игры
+            if len(room['players']) < 2:
+                logger.warning(f"Not enough players to start game. Players: {len(room['players'])}")
                 return None
             
             # Проверяем, что все игроки готовы
             for player in room['players'].values():
                 if not player['ready']:
+                    logger.warning(f"Not all players are ready")
                     return None
             
             # Создаем игру

@@ -241,11 +241,39 @@ class RoomController(QObject):
                 # Излучаем сигнал о начале игры
                 self.game_started.emit(game_id, self.player_id, "Соперник")
             else:
-                QMessageBox.warning(
-                    self.view,
-                    "Ошибка начала игры",
-                    "⚠️ Не удалось начать игру."
-                )
+                # Показываем конкретную причину почему игра не началась
+                room = self.room_service.get_room_info(room_id)
+                if room:
+                    if room['creator_id'] != self.player_id:
+                        QMessageBox.warning(
+                            self.view,
+                            "Ошибка начала игры",
+                            "⚠️ Только создатель комнаты может начать игру"
+                        )
+                    elif len(room['players']) < 2:
+                        QMessageBox.warning(
+                            self.view,
+                            "Ошибка начала игры",
+                            "⚠️ Для начала игры нужно 2 игрока\\n\\nОжидайте подключения второго игрока"
+                        )
+                    else:
+                        # Проверяем кто не готов
+                        not_ready = []
+                        for pid, player in room['players'].items():
+                            if not player['ready']:
+                                not_ready.append(player['name'])
+                        
+                        QMessageBox.warning(
+                            self.view,
+                            "Ошибка начала игры",
+                            f"⚠️ Не все игроки готовы:\\n\\nНе готовы: {', '.join(not_ready)}"
+                        )
+                else:
+                    QMessageBox.warning(
+                        self.view,
+                        "Ошибка начала игры",
+                        "⚠️ Не удалось начать игру"
+                    )
                 
         except Exception as e:
             logger.error(f"Error starting game: {e}")
