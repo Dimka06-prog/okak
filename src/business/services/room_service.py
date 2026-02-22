@@ -173,13 +173,13 @@ class RoomService:
             return False
     
     def start_game(self, room_id: str, player_id: str) -> Optional[str]:
-        """Начать игру (только создатель комнаты)"""
+        """Начать игру (автоматически устанавливает готовность всех игроков)"""
         try:
             room = self.database.get_room(room_id)
             if not room:
                 return None
             
-            # Проверяем, что создатель комнаты запускает игру
+            # Проверяем, что создатель комнаты запускает игру (или автоматический запуск)
             if room['creator_id'] != player_id:
                 logger.warning(f"Only creator can start game. Creator: {room['creator_id']}, Player: {player_id}")
                 return None
@@ -189,11 +189,13 @@ class RoomService:
                 logger.warning(f"Not enough players to start game. Players: {len(room['players'])}")
                 return None
             
-            # Проверяем, что все игроки готовы
-            for player in room['players'].values():
-                if not player['ready']:
-                    logger.warning(f"Not all players are ready")
-                    return None
+            # Автоматически устанавливаем готовность всех игроков
+            for pid in room['players']:
+                room['players'][pid]['ready'] = True
+            
+            # Обновляем комнату с готовностью
+            self.database.update_room(room_id, room)
+            logger.info(f"All players marked as ready for game in room {room_id}")
             
             # Создаем игру
             from .game_service import GameService

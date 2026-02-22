@@ -120,29 +120,44 @@ class RoomController(QObject):
             )
             
     def join_room(self, room_id: str):
-        """Присоединиться к комнате"""
+        """Присоединиться к комнате и автоматически начать игру"""
         try:
-            success = self.room_service.join_room(
-                room_id, 
-                self.player_id, 
-                self.player_name
-            )
+            success = self.room_service.join_room(room_id, self.player_id, self.player_name)
             
             if success:
                 self.current_room_id = room_id
-                self.view.show_room_view()
-                self.update_room_info()
                 
-                QMessageBox.information(
-                    self.view,
-                    "Присоединение к комнате",
-                    "✅ Вы успешно присоединились к комнате!"
-                )
+                # Получаем информацию о комнате
+                room_info = self.room_service.get_room_info(room_id)
+                if room_info:
+                    players_count = len(room_info['players'])
+                    
+                    # Если в комнате 2 игрока, автоматически начинаем игру
+                    if players_count == 2:
+                        logger.info(f"Два игрока в комнате, автоматический запуск игры")
+                        self.start_game(room_id)
+                    else:
+                        # Иначе обновляем интерфейс комнаты
+                        self.update_room_info()
+                        
+                        QMessageBox.information(
+                            self.view,
+                            "Присоединение к комнате",
+                            f"✅ Вы присоединились к комнате!\\n\\n"
+                            f"Игроков в комнате: {players_count}/2\\n"
+                            f"Ожидайте второго игрока для начала игры..."
+                        )
+                
+                self.refresh_rooms()
             else:
                 QMessageBox.warning(
                     self.view,
                     "Ошибка присоединения",
-                    "⚠️ Не удалось присоединиться к комнате."
+                    "⚠️ Не удалось присоединиться к комнате\\n\\n"
+                    "Возможные причины:\\n"
+                    "• Комната заполнена\\n"
+                    "• Игра уже началась\\n"
+                    "• Вы уже в этой комнате"
                 )
                 
         except Exception as e:
