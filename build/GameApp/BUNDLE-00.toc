@@ -1,0 +1,3 @@
+([('GameApp',
+   '/Users/dmitrirodkin/CascadeProjects/windsurf-project/dist/GameApp',
+   'EXECUTABLE')],)

@@ -1,0 +1,5 @@
+PyQt6
+firebase-admin==6.2.0
+pyinstaller
+bcrypt
+python-dotenv

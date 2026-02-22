@@ -1,0 +1,8 @@
+src/config/firebase_config.json
+legacy/firebase_database.py
+legacy/realtime_database.py
+__pycache__/
+*.pyc
+build/
+dist/
+release/

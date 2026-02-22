@@ -1,0 +1,26 @@
+{
+    "app": {
+        "name": "Предать или Сотрудничать",
+        "version": "1.0.0",
+        "debug": false
+    },
+    "database": {
+        "type": "firebase",
+        "config_file": "firebase_config.json"
+    },
+    "game": {
+        "max_players_per_game": 2,
+        "questions_per_round": 10,
+        "ping_interval": 10,
+        "online_timeout": 30
+    },
+    "ui": {
+        "window_width": 800,
+        "window_height": 600,
+        "theme": "default"
+    },
+    "logging": {
+        "level": "INFO",
+        "format": "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+    }
+}
